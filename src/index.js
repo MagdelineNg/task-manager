@@ -4,7 +4,6 @@ const express = require("express");
 require("./db/mongoose");
 const User = require("./models/user");
 const Task = require("./models/task");
-const { translateAliases } = require("./models/user");
 const userRouter = require('./routers/user')
 const taskRouter = require('./routers/task')
 
@@ -21,3 +20,6 @@ app.use(taskRouter)
 app.listen(port, () => {
   console.log("server is up on port " + port);
 });
+
+
+

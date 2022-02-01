@@ -9,7 +9,8 @@ router.post("/users", async (req, res) => {
   //new code + OLD code
     try{   
       await user.save() 
-      res.status(201).send(user)
+      const token = await user.generateAuthToken()
+      res.status(201).send({user, token})
     }catch(e){
       res.status(400).send(e)
     }
@@ -18,10 +19,17 @@ router.post("/users", async (req, res) => {
     //   }).catch((e) => {
     //     res.status(400).send(e);
     //   });
-  
-    //   able to get it in postman app
-    //   console.log(req.body);
-  });
+});
+
+  router.post('/users/login', async (req,res) => {
+    try{
+      const user = await User.findByCredentials(req.body.email, req.body.password)
+      const token = await user.generateAuthToken()    //token not accessible by User 
+      res.send({user, token})
+    } catch(e){
+      res.status(400).send()
+    }
+  })
   
   //resource creation endpoint : fetch all users
   //new code + OLD code
@@ -58,6 +66,8 @@ router.post("/users", async (req, res) => {
     }
   })
 
+
+  //findbyidandupdate BYPASSES mongoose middleware
   router.patch('/users/:id', async (req,res) => {
     //update property that does not exist
     const updates = Object.keys(req.body)
@@ -74,7 +84,18 @@ router.post("/users", async (req, res) => {
   
     try{   //set new: true so mongoose returns new user after update
       //req.params.id comes from /:id in URL, req.body is what we r trying to update
-      const user = await User.findByIdAndUpdate(req.params.id, req.body, {new: true, runValidators: true})
+
+
+      //to run middleware (userSchema.pre())
+        const user = await User.findById(req.params.id)
+        updates.forEach((update) => user[update] = req.body[update]) //shorthand notation
+        // updates.forEach((update) => {
+        //     user[update] = req.body[update]   //dynamic updating
+        // })
+        await user.save()   //execute middleware
+      //const user = await User.findByIdAndUpdate(req.params.id, req.body, {new: true, runValidators: true})
+      
+      
       //no user
       if (!user){
         return res.status(404).send()
