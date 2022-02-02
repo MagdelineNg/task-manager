@@ -5,15 +5,15 @@ const User = require('../models/user')   //../ to get out of current directory
 const auth = async (req, res, next) => {
     try{
         //validate token (header returns string token value, replace removes beginning portion)
-        const token = req.header('Authorization').remove('Bearer ', '')
+        const token = req.header('Authorization').replace('Bearer ', '')
         //decoded: decoded payload for token 
-        const decoded = jwt.verify(token, 'thisismynewcourse')
+        const decoded = jwt.verify(token, process.env.JWT_SECRET)
         const user = await User.findOne({ _id: decoded._id, 'tokens.token': token })
-
         if (!user){
             throw new Error()
         } 
 
+        req.token = token
         req.user =  user
         next() //letting express know we r done w the middleware fn
     }catch(e){
@@ -22,3 +22,4 @@ const auth = async (req, res, next) => {
 }
 
 module.exports = auth  //fn
+
