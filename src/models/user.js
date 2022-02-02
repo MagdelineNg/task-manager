@@ -41,22 +41,24 @@ const userSchema = new mongoose.Schema({
           throw new Error("password cannot contain 'password'");
         }
       },
-      tokens: [{   //array[] of objects{}
-        token: {
-          type: String,
-          required: true 
-        }
-      }]
     },
+    tokens: [{   //array[] of objects{}
+      token: {
+        type: String,
+        required: true 
+      }
+    }]
 })
 
 //instance methods accessible on instances (e.g. user is an instance of User)
 userSchema.methods.generateAuthToken = async function () {
   const user = this 
   const token = jwt.sign({_id: user._id.toString()}, 'thisismynewcourse')
+  
   //add token to array
   user.tokens = user.tokens.concat({token})
   await user.save()   //save the tokens to database so can invalidate the tokens when user can logout 
+  
   return token
 } 
 

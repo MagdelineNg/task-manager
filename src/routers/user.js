@@ -1,5 +1,6 @@
 const express = require('express')
 const User = require('../models/user')
+const auth = require('../middleware/auth')
 const router = new express.Router()
 
 //create user creation endpoint (handle success & error)
@@ -33,7 +34,7 @@ router.post("/users", async (req, res) => {
   
   //resource creation endpoint : fetch all users
   //new code + OLD code
-  router.get('/users', async (req, res) =>{
+  router.get('/users', auth, async (req, res) =>{
     try{
       const users = await User.find({})
       res.send(users)
